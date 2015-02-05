@@ -8,16 +8,9 @@ __license__ = "TBD"
 __maintainer__ = "Jotham Apaloo"
 __email__ = "jothamapaloo@gmail.com"
 
-import numpy as N
-np = N
-from theano.compat.six.moves import xrange
+import numpy as np
+from pylearn2.utils.datascibowl_reader import read_datascibowl_images
 from pylearn2.datasets import dense_design_matrix
-from pylearn2.datasets import control
-from pylearn2.datasets import cache
-from pylearn2.utils import serial
-from pylearn2.utils.datascibowl import read_datascibowl_images
-from pylearn2.utils.rng import make_np_rng
-
 
 class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
     """
@@ -25,75 +18,56 @@ class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
 
     Parameters
     ----------
+    which_set : str
+        'train' or 'test'
+        'test' currently doesnt work, these are for prediction
+        only, response class is not known
+    start :
+    stop : 
+    axes : 
+    binarize : pixels with value < 0.5 assigned 1, else 0
+    centre : centre pixel values
 
     """
 
-    def __init__(self, axes=['b', 0, 1, 'c']):
-        self.args = locals()
+    def __init__(self, axes=('b', 0, 1, 'c'), center=False,
+                 binarize=False, start=None, stop=None,
+                 which_set='train'):
 
-        def dimshuffle(b01c):
-            """
-            .. todo::
+        if which_set not in ['train']:
+            if which_set == 'test':
+                raise ValueError(
+                    "test is not implemented, those data are for "
+                    "prediction only.")
+            raise ValueError(
+                'Unrecognized which_set value "%s".' % (which_set,) +
+                '". Valid values are ["train"].')
 
-                WRITEME
-            """
-            default = ('b', 0, 1, 'c')
-            return b01c.transpose(*[default.index(axis) for axis in axes])
-
-        if control.get_load_data():
-            path = "${PYLEARN2_DATA_PATH}/datascibowl/"
-            im_path = path + 'train'
-            topo_view, y = read_datascibowl_images(imgs_path)
+        
+        path = "/home/joth/projects/2014-12-20_datascibowl/competition_data/"
+        imgs_path = path + which_set
+        
+        topo_view, y = read_datascibowl_images(imgs_path, 32)
             
-        # if binarize:
-        #     topo_view = (topo_view > 0.5).astype('float32')
-
-        y_labels = 10
-
-        # m, r, c = topo_view.shape
-        # assert r == 28
-        # assert c == 28
-        topo_view = topo_view.reshape(m, r, c, 1)
-
-        if which_set == 'train':
-            assert m == 60000
-        elif which_set == 'test':
-            assert m == 10000
-        else:
-            assert False
-
+        if binarize:
+            topo_view = (topo_view > 0.5).astype('float64')
         if center:
             topo_view -= topo_view.mean(axis=0)
 
+        if start == None:
+            start = 0
+        if stop == None:
+            stop = topo_view.shape[0]
 
+        topo_view = topo_view[start:stop, :]
+        y = y[start:stop, :]
 
-        # here we just the vars to subclass denseDesignMatrix
-        # see the DenseDesignMatrix class for their definition
-        # topo_v
-        super(MNIST, self).__init__(topo_view=dimshuffle(topo_view), y=y,
-                                    axes=axes, y_labels=y_labels)
+        y_labels = 121
 
-        assert not N.any(N.isnan(self.X))
-
-        if start is not None:
-            assert start >= 0
-            if stop > self.X.shape[0]:
-                raise ValueError('stop=' + str(stop) + '>' +
-                                 'm=' + str(self.X.shape[0]))
-            assert stop > start
-            self.X = self.X[start:stop, :]
-            if self.X.shape[0] != stop - start:
-                raise ValueError("X.shape[0]: %d. start: %d stop: %d"
-                                 % (self.X.shape[0], start, stop))
-            if len(self.y.shape) > 1:
-                self.y = self.y[start:stop, :]
-            else:
-                self.y = self.y[start:stop]
-            assert self.y.shape[0] == stop - start
-
-        if which_set == 'test':
-            assert fit_test_preprocessor is None or \
-                (fit_preprocessor == fit_test_preprocessor)
-
-        if self.X is not None and preprocessor:
-            preprocessor.apply(self, fit_preprocessor)
+        print 'topo_view.shape: {}'.format(topo_view.shape)
+        print 'NAs: {}'.format(np.count_nonzero(np.isnan(topo_view)))
+        
+        super(DataSciBowl, self).__init__(topo_view=topo_view,
+                                          y=np.atleast_2d(y).T,
+                                          axes=axes,
+                                          y_labels=y_labels)

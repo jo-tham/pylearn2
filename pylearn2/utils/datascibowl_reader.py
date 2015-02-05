@@ -24,7 +24,7 @@ def read_datascibowl_images(path_to_imgs, maxPixel=32):
     Parameters
     ----------
     path_to_imgs : str
-        absolute path to directory containing, directories
+        absolute path to directory containing directories
         corresponding to classes, with each directory
         containing observations (images) for each class
 
@@ -44,6 +44,7 @@ def read_datascibowl_images(path_to_imgs, maxPixel=32):
     """
 
     print "Looking for data in %s" %path_to_imgs
+    assert os.path.isdir(path_to_imgs), "%s doesn't exist" %path_to_imgs
     directory_names = glob.glob(os.path.join(path_to_imgs, "*"))
 
     # Rescale the images and create the combined metrics
@@ -56,7 +57,7 @@ def read_datascibowl_images(path_to_imgs, maxPixel=32):
                 if fileName[-4:] != ".jpg":
                     continue
                 numberofImages += 1
-    print "Found %s images" %numberofImages
+    # print "Found %s images" %numberofImages
 
     imageSize = maxPixel * maxPixel
     num_rows = numberofImages
@@ -71,7 +72,6 @@ def read_datascibowl_images(path_to_imgs, maxPixel=32):
     # List of string of class names
     namesClasses = list()
 
-    print "Reading images"
     # Navigate through the list of directories
     for folder in directory_names:
         # Append the string class name for each class
@@ -96,9 +96,9 @@ def read_datascibowl_images(path_to_imgs, maxPixel=32):
             # Store the classlabel
             y[i] = label
             i += 1
-            # report progress for each 5% done  
-            report = [int((j+1)*num_rows/20.) for j in range(20)]
-            if i in report: print np.ceil(i *100.0 / num_rows), "% done"
-    label += 1
+            label += 1
+
+    X = X.reshape(X.shape[0], 32, 32, 1)
+    y = y.reshape(y.shape[0], 1)
 
     return X, y
