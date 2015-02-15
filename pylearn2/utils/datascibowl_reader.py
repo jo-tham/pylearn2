@@ -57,7 +57,7 @@ def read_datascibowl_images(path_to_imgs, maxPixel=32):
                 if fileName[-4:] != ".jpg":
                     continue
                 numberofImages += 1
-    # print "Found %s images" %numberofImages
+    print "Found %s images" %numberofImages
 
     imageSize = maxPixel * maxPixel
     num_rows = numberofImages
@@ -74,28 +74,30 @@ def read_datascibowl_images(path_to_imgs, maxPixel=32):
 
     # Navigate through the list of directories
     for folder in directory_names:
+        print "Reading files from %s" %folder
         # Append the string class name for each class
         currentClass = folder.split(os.pathsep)[-1]
         namesClasses.append(currentClass)
-        for fileNameDir in os.walk(folder):   
+        for fileNameDir in os.walk(folder):
             for fileName in fileNameDir[2]:
                 # Only read in the images
                 if fileName[-4:] != ".jpg":
+                    print "Skipping %s" %fileName
                     continue
-            
-            # Read in the images and create the features
-            nameFileImage = "{0}{1}{2}".format(fileNameDir[0],\
+
+                # Read in the images and create the features
+                nameFileImage = "{0}{1}{2}".format(fileNameDir[0],\
                                                os.sep, fileName)            
-            image = imread(nameFileImage, as_grey=True)
-            files.append(nameFileImage)
-            image = resize(image, (maxPixel, maxPixel))
+                image = imread(nameFileImage, as_grey=True)
+                files.append(fileName)
+                image = resize(image, (maxPixel, maxPixel))
             
-            # Store the rescaled image pixels and the axis ratio
-            X[i, 0:imageSize] = np.reshape(image, (1, imageSize))
+                # Store the rescaled image pixels and the axis ratio
+                X[i, 0:imageSize] = np.reshape(image, (1, imageSize))
             
-            # Store the classlabel
-            y[i] = label
-            i += 1
+                # Store the classlabel
+                y[i] = label
+                i += 1
             label += 1
 
     X = X.reshape(X.shape[0], 32, 32, 1)
