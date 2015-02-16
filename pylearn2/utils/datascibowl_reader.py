@@ -100,7 +100,7 @@ def read_datascibowl_images(path_to_imgs, maxPixel=32):
                 i += 1
             label += 1
 
-    X = X.reshape(X.shape[0], 32, 32, 1)
+    X = X.reshape(X.shape[0], maxPixel, maxPixel, 1)
     y = y.reshape(y.shape[0], 1)
 
     return X, y
