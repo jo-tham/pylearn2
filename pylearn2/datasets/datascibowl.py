@@ -68,6 +68,6 @@ class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
         print 'NAs: {}'.format(np.count_nonzero(np.isnan(topo_view)))
         
         super(DataSciBowl, self).__init__(topo_view=topo_view,
-                                          y=np.atleast_2d(y).T,
+                                          y=y,
                                           axes=axes,
                                           y_labels=y_labels)
