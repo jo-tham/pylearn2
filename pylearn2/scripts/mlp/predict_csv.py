@@ -28,6 +28,8 @@ import sys
 import os
 import argparse
 import numpy as np
+import pandas as pd
+import pickle
 
 from pylearn2.utils import serial
 from theano import tensor as T
@@ -48,11 +50,15 @@ def make_argument_parser():
                         help='Specifies the csv file with the values to predict')
     parser.add_argument('output_filename',
                         help='Specifies the predictions output file')
+    parser.add_argument('rownames_filename',
+                        help='Specifies the row indices to use for the output file')
+    parser.add_argument('colnames_filename',
+                        help='Specifies the column names to use for the output file')
     parser.add_argument('--prediction_type', '-P',
-                        default="classification",
+                        default="regression",
                         help='Prediction type (classification/regression)')
     parser.add_argument('--output_type', '-T',
-                        default="int",
+                        default="float",
                         help='Output variable type (int/float)')
     parser.add_argument('--has-headers', '-H',
                         dest='has_headers',
@@ -68,7 +74,8 @@ def make_argument_parser():
                              comma (default) ',' semicolon ';' colon ':' tabulation '\\t' and space ' '")
     return parser
 
-def predict(model_path, test_path, output_path, predictionType="classification", outputType="int",
+def predict(model_path, test_path, output_path, rownames_path, colnames_path,
+            predictionType="classification", outputType="float",
             headers=False, first_col_label=False, delimiter=","):
     """
     Predict from a pkl file.
@@ -115,7 +122,7 @@ def predict(model_path, test_path, output_path, predictionType="classification",
     # x is a numpy array
     # x = pickle.load(open(test_path, 'rb'))
     skiprows = 1 if headers else 0
-    x = np.loadtxt(test_path, delimiter=delimiter, skiprows=skiprows)
+    x = np.load(test_path)
 
     if first_col_label:
         x = x[:,1:]
@@ -128,7 +135,14 @@ def predict(model_path, test_path, output_path, predictionType="classification",
     if outputType != "int":
         variableType = "%f"
 
-    np.savetxt(output_path, y, fmt=variableType)
+    #np.savetxt(output_path, y, fmt=variableType)
+    with open(colnames_path, 'r') as colnames:
+        labels = pickle.load(colnames)
+    with open(rownames_path, 'r') as rownames:
+        indices = pickle.load(rownames)
+    df = pd.DataFrame(y, columns=labels, index=indices)
+    df.index.name = 'image'
+    df.to_csv(output_path)
     return True
 
 if __name__ == "__main__":
@@ -138,8 +152,9 @@ if __name__ == "__main__":
     parser = make_argument_parser()
     args = parser.parse_args()
     ret = predict(args.model_filename, args.test_filename, args.output_filename,
-        args.prediction_type, args.output_type,
-        args.has_headers, args.has_row_label, args.delimiter)
+                  args.rownames_filename, args.colnames_filename,
+                  args.prediction_type, args.output_type,
+                  args.has_headers, args.has_row_label, args.delimiter)
     if not ret:
         sys.exit(-1)
 
