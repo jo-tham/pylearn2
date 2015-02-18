@@ -92,7 +92,7 @@ def read_datascibowl_images(path_to_imgs, maxPixel=32):
                 files.append(fileName)
                 image = resize(image, (maxPixel, maxPixel))
             
-                # Store the rescaled image pixels and the axis ratio
+                # Store the rescaled image pixels
                 X[i, 0:imageSize] = np.reshape(image, (1, imageSize))
             
                 # Store the classlabel
