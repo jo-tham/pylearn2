@@ -8,6 +8,7 @@ __license__ = "TBD"
 __maintainer__ = "Jotham Apaloo"
 __email__ = "jothamapaloo@gmail.com"
 
+import os
 import numpy as np
 from pylearn2.utils.datascibowl_reader import read_datascibowl_images
 from pylearn2.datasets import dense_design_matrix
@@ -45,7 +46,7 @@ class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
                 '". Valid values are ["train"].')
 
         
-        path = "/home/joth/projects/2014-12-20_datascibowl/competition_data/"
+        path = os.path.expandvars("${PYLEARN2_DATA_PATH}/datascibowl/")
         imgs_path = path + which_set
         
         topo_view, y = read_datascibowl_images(imgs_path, 32)
