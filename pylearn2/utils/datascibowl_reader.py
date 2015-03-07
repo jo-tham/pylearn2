@@ -12,11 +12,14 @@ __maintainer__ = "Jotham Apaloo"
 import numpy as np
 import glob
 import os
+import pickle as pkl
 from skimage.io import imread
 from skimage.transform import resize
 
 
-def read_datascibowl_images(path_to_imgs, maxPixel=32):
+def read_datascibowl_images(path_to_imgs, maxPixel=32,
+                            save_classnames=False,
+                            classnames_dir=None):
     """
     Read datascibowl images from original files and
     directory structure
@@ -76,7 +79,8 @@ def read_datascibowl_images(path_to_imgs, maxPixel=32):
     for folder in directory_names:
         print "Reading files from %s" %folder
         # Append the string class name for each class
-        currentClass = folder.split(os.pathsep)[-1]
+        
+        currentClass = os.path.split(folder)[-1]
         namesClasses.append(currentClass)
         for fileNameDir in os.walk(folder):
             for fileName in fileNameDir[2]:
@@ -100,6 +104,14 @@ def read_datascibowl_images(path_to_imgs, maxPixel=32):
                 i += 1
             label += 1
 
+    if save_classnames:
+        assert os.path.isdir(classnames_dir),\
+            "%s doesn't exist" %classnames_dir
+        classnames_path = os.path.join(classnames_dir,
+                                       'pred_colnames_reader.pkl')
+        with open(classnames_path, 'w') as f:
+            pkl.dump(namesClasses, f)
+                
     X = X.reshape(X.shape[0], maxPixel, maxPixel, 1)
     y = y.reshape(y.shape[0], 1)
 
