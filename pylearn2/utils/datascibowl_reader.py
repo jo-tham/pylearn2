@@ -9,6 +9,7 @@ __license__ = ["???"]
 __email__ = "jothamapaloo@gmail.com"
 __maintainer__ = "Jotham Apaloo"
 
+import pdb
 import numpy as np
 import glob
 import os
@@ -19,7 +20,8 @@ from skimage.transform import resize
 
 def read_datascibowl_images(path_to_imgs, maxPixel=32,
                             save_classnames=False,
-                            classnames_dir=None):
+                            classnames_dir=None, augment_factor=None,
+                            ):
     """
     Read datascibowl images from original files and
     directory structure
@@ -35,6 +37,9 @@ def read_datascibowl_images(path_to_imgs, maxPixel=32,
         size of images, image will be rescaled to 
         maxPixel rows x maxPixel columns
 
+    augment_factor : int
+    
+
     Returns
     _______
     images : ndarray, shape (n_images, n_rows, n_cols)
@@ -48,22 +53,33 @@ def read_datascibowl_images(path_to_imgs, maxPixel=32,
 
     print "Looking for data in %s" %path_to_imgs
     assert os.path.isdir(path_to_imgs), "%s doesn't exist" %path_to_imgs
+
     directory_names = glob.glob(os.path.join(path_to_imgs, "*"))
 
     # Rescale the images and create the combined metrics
     # and training labels, get the total training images
-    numberofImages = 0
+    number_of_images = 0
+    class_samples = {}
+
     for folder in directory_names:
-        for fileNameDir in os.walk(folder):   
+        # currentClass = os.path.split(folder)[-1]
+        for fileNameDir in os.walk(folder):
+            class_samples[os.path.split(folder)[-1]] = 0
             for fileName in fileNameDir[2]:
                 # Only read in the images
                 if fileName[-4:] != ".jpg":
                     continue
-                numberofImages += 1
-    print "Found %s images" %numberofImages
+                number_of_images += 1
+                class_samples[os.path.split(folder)[-1]] += 1
+
+    class_n_max = max(class_samples.values())
+    n_tot = augment_factor * class_n_max
+    
+    print "Found %s images" %number_of_images
+    print "Highest class sample is %s observations" %class_n_max
 
     imageSize = maxPixel * maxPixel
-    num_rows = numberofImages
+    num_rows = class_n_max * augment_factor * 121
     num_features = imageSize
 
     X = np.zeros((num_rows, num_features), dtype=float)
@@ -79,11 +95,11 @@ def read_datascibowl_images(path_to_imgs, maxPixel=32,
     for folder in directory_names:
         print "Reading files from %s" %folder
         # Append the string class name for each class
-        
         currentClass = os.path.split(folder)[-1]
         namesClasses.append(currentClass)
         for fileNameDir in os.walk(folder):
             for fileName in fileNameDir[2]:
+                pdb.set_trace()
                 # Only read in the images
                 if fileName[-4:] != ".jpg":
                     print "Skipping %s" %fileName
