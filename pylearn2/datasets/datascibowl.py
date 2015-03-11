@@ -34,7 +34,7 @@ class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
 
     def __init__(self, axes=('b', 0, 1, 'c'), center=False,
                  binarize=False, start=None, stop=None,
-                 which_set='train', shuffle=False):
+                 which_set='train', shuffle=False, maxPixel=48):
 
         if which_set not in ['train']:
             if which_set == 'test':
@@ -49,7 +49,7 @@ class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
         path = os.path.expandvars("${PYLEARN2_DATA_PATH}/datascibowl/")
         imgs_path = path + which_set
         
-        topo_view, y = read_datascibowl_images(imgs_path, 32)
+        topo_view, y = read_datascibowl_images(imgs_path, maxPixel)
             
         if binarize:
             topo_view = (topo_view > 0.5).astype('float64')
