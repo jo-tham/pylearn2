@@ -258,3 +258,7 @@ class TransformerIterator(Iterator):
             WRITEME
         """
         return self.raw_iterator.num_examples
+
+    @property
+    def uneven(self):
+        return self.raw_iterator.uneven
