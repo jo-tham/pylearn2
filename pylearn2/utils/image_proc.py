@@ -40,11 +40,11 @@ def random_transform(im, threshold=0.5):
 
 def random_transform_batch(batch):
     x, y, batch_size = batch.shape
-    output_batch = np.zeros(batch.shape)
+    output_batch = np.zeros(batch.shape, dtype=np.float32)
     for i in xrange(batch_size):
-        output_batch[:, :, i] = random_transform(batch[:, :, i], threshold)
+        output_batch[:, :, i] = random_transform(batch[:, :, i])
     return output_batch
 
 def random_transform_block(inputs):
     batch = np.array([random_transform_batch(b) for b in inputs])
-    return batch[..., np.newaxis]
+    return batch
