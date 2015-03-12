@@ -14,7 +14,7 @@ from pylearn2.utils.datascibowl_reader import read_datascibowl_images
 from pylearn2.datasets import dense_design_matrix
 from pylearn2.utils.rng import make_np_rng
 from pylearn2.blocks import Block
-from pylearn2.utils.image_proc import random_transform
+from pylearn2.utils.image_proc import random_transform_block
 
 class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
     """
@@ -102,7 +102,8 @@ class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
 class MyBlock(Block): 
 
     def __init__(self, space): 
-        self.space = space 
+        self.space = space
+        self.fn = random_transform_block
 
     def get_input_space(self): 
         return self.space 

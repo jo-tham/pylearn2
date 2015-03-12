@@ -36,3 +36,8 @@ def random_transform(im, threshold=0.5):
     if pix_pct_diff >= threshold:
         return transformed_im
     return random_transform(im)
+
+
+def random_transform_block(inputs):
+    batch = np.array([random_transform(b) for b in inputs])
+        return batch[..., np.newaxis]
