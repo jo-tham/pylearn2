@@ -100,6 +100,17 @@ class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
 
 
 class MyBlock(Block): 
+
+    def __init__(self, space): 
+        self.space = space 
+
+    def get_input_space(self): 
+        return self.space 
+
+    def get_output_space(self): 
+        return self.space 
+
+
     def __call__(inputs):
         batch = np.array([random_transform(b) for b in inputs])
         return batch[..., np.newaxis]
