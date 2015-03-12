@@ -13,6 +13,8 @@ import numpy as np
 from pylearn2.utils.datascibowl_reader import read_datascibowl_images
 from pylearn2.datasets import dense_design_matrix
 from pylearn2.utils.rng import make_np_rng
+from pylearn2.blocks import Block
+from pylearn2.utils.image_proc import random_transform
 
 class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
     """
@@ -95,3 +97,9 @@ class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
                                           y=y,
                                           axes=axes,
                                           y_labels=y_labels)
+
+
+class MyBlock(Block): 
+    def __call__(inputs):
+        batch = np.array([random_transform(b) for b in inputs])
+        return batch[..., np.newaxis]
