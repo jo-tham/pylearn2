@@ -483,6 +483,9 @@ class ShuffledSequentialSubsetIterator(SequentialSubsetIterator):
     def __next__(self):
         return self.next()
 
+    @property
+    def uneven(self):
+        return self.raw_iterator.uneven
 
 class RandomUniformSubsetIterator(SubsetIterator):
     """
