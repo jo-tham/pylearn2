@@ -202,7 +202,7 @@ class TransformerIterator(Iterator):
         self.raw_iterator = raw_iterator
         self.transformer_dataset = transformer_dataset
         self.stochastic = raw_iterator.stochastic
-        self.uneven = raw_iterator.uneven
+        #self.uneven = raw_iterator.uneven
         self.data_specs = data_specs
 
     def __iter__(self):
@@ -259,6 +259,6 @@ class TransformerIterator(Iterator):
         """
         return self.raw_iterator.num_examples
 
-    @property
-    def uneven(self):
-        return self.raw_iterator.uneven
+    # @property
+    # def uneven(self):
+    #     return self.raw_iterator.uneven
