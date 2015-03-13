@@ -15,6 +15,7 @@ from pylearn2.datasets import dense_design_matrix
 from pylearn2.utils.rng import make_np_rng
 from pylearn2.blocks import Block
 from pylearn2.utils.image_proc import random_transform_block
+from skimage.transform import warp, AffineTransform as af
 
 class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
     """
@@ -37,7 +38,7 @@ class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
     def __init__(self, axes=('b', 0, 1, 'c'), center=False,
                  binarize=False, start=None, stop=None,
                  which_set='train', shuffle=False, maxPixel=48,
-                 augment_factor=None):
+                 augment_factor=None, rotate=False):
 
         if which_set not in ['train']:
             if which_set == 'test':
@@ -65,8 +66,8 @@ class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
         y_labels = 121
         m = topo_view.shape[0]
 
-        print 'topo_view.shape: {}'.format(topo_view.shape)
-        print 'NAs: {}'.format(np.count_nonzero(np.isnan(topo_view)))
+        # print 'topo_view.shape: {}'.format(topo_view.shape)
+        # print 'NAs: {}'.format(np.count_nonzero(np.isnan(topo_view)))
 
         if shuffle:
             self.shuffle_rng = make_np_rng(
@@ -92,6 +93,32 @@ class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
 
         topo_view = topo_view[start:stop, :]
         y = y[start:stop, :]
+
+        if rotate:
+            m,r,c,ch = topo_view.shape
+            numtrans = 4
+            rotated_data = np.zeros((m*numtrans, r, c, ch), dtype=np.float32)
+            angle = 360/numtrans
+            rotations = [i*angle for i in xrange(numtrans)]
+            y_flat = y.copy().reshape(y.shape[0])
+            y_new = y.copy().reshape(y.shape[0])
+
+            for i in xrange(numtrans-1):
+                y_new = np.append(y_new, y_flat)
+
+            for n_rot, rot_angle in enumerate(rotations):
+                transform = af(rotation=rot_angle)
+                for i in xrange(topo_view.shape[0]):
+                    im = topo_view[i,...].reshape(maxPixel, maxPixel)
+                    im_rot = im.copy()
+                    im_rot = warp(im_rot, transform, cval=1.0)
+                    im_rot = im_rot.reshape(r, c, ch)
+                    rotated_data[(n_rot*m) + i, ...] = im_rot
+
+            topo_view = rotated_data
+            y = y_new.reshape(y_new.shape[0], 1)
+
+        print "topo_view.shape: %s" %(topo_view.shape,)
         
         super(DataSciBowl, self).__init__(topo_view=topo_view,
                                           y=y,
