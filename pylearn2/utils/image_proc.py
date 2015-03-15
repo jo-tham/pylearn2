@@ -8,7 +8,7 @@ def random_transform(im, threshold=0.5):
     x, y = im.shape
     pixel_count = x * y
     
-    rotation = random.uniform(0, 360)
+    rotation = random.uniform(0, math.pi*2)
     flip = np.random.binomial(1, 0.5)
     if flip:
         im = np.fliplr(im)

@@ -15,7 +15,7 @@ from pylearn2.datasets import dense_design_matrix
 from pylearn2.utils.rng import make_np_rng
 from pylearn2.blocks import Block
 from pylearn2.utils.image_proc import random_transform_block
-from skimage.transform import warp, AffineTransform as af
+from skimage import transform as skimtr
 
 class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
     """
@@ -107,16 +107,29 @@ class DataSciBowl(dense_design_matrix.DenseDesignMatrix):
                 y_new = np.append(y_new, y_flat)
 
             for n_rot, rot_angle in enumerate(rotations):
-                transform = af(rotation=rot_angle)
                 for i in xrange(topo_view.shape[0]):
                     im = topo_view[i,...].reshape(maxPixel, maxPixel)
                     im_rot = im.copy()
-                    im_rot = warp(im_rot, transform, cval=1.0)
+                    im_rot = skimtr.rotate(im_rot, rot_angle,
+                                           resize=False, cval=1.0)
                     im_rot = im_rot.reshape(r, c, ch)
                     rotated_data[(n_rot*m) + i, ...] = im_rot
 
             topo_view = rotated_data
             y = y_new.reshape(y_new.shape[0], 1)
+
+            if shuffle:
+                for i in xrange(topo_view.shape[0]):
+                    j = self.shuffle_rng.randint(m)
+
+                    tmp = topo_view[i, :, :, :].copy()
+                    topo_view[i, :, :, :] = topo_view[j, :, :, :]
+                    topo_view[j, :, :, :] = tmp
+
+                    tmp = y[i:i + 1].copy()
+                    y[i] = y[j]
+                    y[j] = tmp
+
 
         print "topo_view.shape: %s" %(topo_view.shape,)
         
@@ -132,13 +145,12 @@ class MyBlock(Block):
         self.space = space
         self.fn = random_transform_block
 
+    def __call__(inputs):
+        batch = np.array([random_transform(b) for b in inputs])
+        return batch[..., np.newaxis]
+
     def get_input_space(self): 
         return self.space 
 
     def get_output_space(self): 
         return self.space 
-
-
-    def __call__(inputs):
-        batch = np.array([random_transform(b) for b in inputs])
-        return batch[..., np.newaxis]
